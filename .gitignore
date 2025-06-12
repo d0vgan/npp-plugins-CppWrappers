@@ -1,0 +1,11 @@
+#-- Visual C++ cache files
+.vs/
+
+#-- Build results
+x64/
+Release/
+Debug/
+
+#-- User-specific files
+*.suo
+*.user

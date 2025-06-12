@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1321
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{3130EEDF-92DF-48AB-93A9-8300AEB46AAE}") = "LinefilterCpp", "LinefilterCpp_VC2017.vcxproj", "{C8638283-1B4E-40AD-9536-979B45D32EED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Debug|Win32.Build.0 = Debug|Win32
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Debug|x64.ActiveCfg = Debug|x64
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Debug|x64.Build.0 = Debug|x64
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Release|Win32.ActiveCfg = Release|Win32
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Release|Win32.Build.0 = Release|Win32
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Release|x64.ActiveCfg = Release|x64
+		{C8638283-1B4E-40AD-9536-979B45D32EED}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {943B0D3F-EB1C-499B-96C3-D385EE7D5B25}
+	EndGlobalSection
+EndGlobal
