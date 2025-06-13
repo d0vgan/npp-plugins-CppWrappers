@@ -17,8 +17,12 @@ const TCHAR* const ERR_GETFUNCSARRAY_FUNC_NOT_FOUND = _T(HOSTED_PLUGIN_DLL_NAME 
 const TCHAR* const ERR_BENOTIFIED_FUNC_NOT_FOUND = _T(HOSTED_PLUGIN_DLL_NAME " does not export a function \"beNotified\"");
 const TCHAR* const ERR_INVOKING_HOSTED_FUNC = _T("Error invoking a function \"%s\" from " HOSTED_PLUGIN_DLL_NAME);
 
+typedef void (*BENOTIFIED_FUNC)(SCNotification *notifyCode); // "beNotified"
+
 HMODULE           g_hThisDll = NULL;
 HMODULE           g_hHostedDll = NULL;
+BENOTIFIED_FUNC   g_pBeNotifiedFunc = NULL;
+bool              g_bDarkModeChangedWhileNotLoaded = false;
 NppData           g_nppData;
 FuncItem          g_funcItem[nbFunc];
 ShortcutKey       g_funcShortcut[nbFunc];
@@ -35,15 +39,18 @@ bool NotifyHostedDll(unsigned int code, bool canShowError)
 {
     if ( g_hHostedDll )
     {
-        FARPROC pProc = ::GetProcAddress(g_hHostedDll, "beNotified");
-        if ( pProc )
+        if ( !g_pBeNotifiedFunc )
         {
-            typedef void (*BENOTIFIED_FUNC)(SCNotification *notifyCode);
+            g_pBeNotifiedFunc = (BENOTIFIED_FUNC) ::GetProcAddress(g_hHostedDll, "beNotified");
+        }
+
+        if ( g_pBeNotifiedFunc )
+        {
             SCNotification scNotific;
             ::ZeroMemory(&scNotific, sizeof(SCNotification));
             scNotific.nmhdr.hwndFrom = g_nppData._nppHandle;
             scNotific.nmhdr.code = code;
-            ((BENOTIFIED_FUNC) pProc)(&scNotific);
+            g_pBeNotifiedFunc(&scNotific);
             return true;
         }
         else if ( canShowError )
@@ -92,6 +99,15 @@ bool InitHostedPlugin()
 
     if ( !NotifyHostedDll(NPPN_READY, true) )
         return false;
+
+    if ( !NotifyHostedDll(NPPN_TBMODIFICATION, true) )
+        return false;
+
+    if ( g_bDarkModeChangedWhileNotLoaded )
+    {
+        if ( !NotifyHostedDll(NPPN_DARKMODECHANGED, true) )
+            return false;
+    }
 
     pProc = ::GetProcAddress(g_hHostedDll, "getFuncsArray");
     if ( pProc )
@@ -216,6 +232,7 @@ extern "C" BOOL APIENTRY DllMain(
             {
                 ::FreeLibrary(g_hHostedDll);
                 g_hHostedDll = NULL;
+                g_pBeNotifiedFunc = NULL;
             }
             break;
 
@@ -260,7 +277,15 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
             case NPPN_DARKMODECHANGED:
             case NPPN_READY:
             case NPPN_SHUTDOWN:
-                NotifyHostedDll(notificationCode, false);
+                if ( g_hHostedDll )
+                {
+                    NotifyHostedDll(notificationCode, false);
+                }
+                else // !g_hHostedDll
+                {
+                    if (notificationCode == NPPN_DARKMODECHANGED)
+                       g_bDarkModeChangedWhileNotLoaded = true;
+                }
                 break;
         }
     }
