@@ -1,0 +1,42 @@
+#include "Plugin.h"
+#include <winresrc.h>
+
+#define QUOTE(x) #x
+#define STR(x) QUOTE(x)
+
+#define PLUGIN_DESCRIPTION "C++ host for " HOSTED_PLUGIN_DLL_NAME " by Mark Olson"
+#define PLUGIN_NAME        PLUGIN_INTERNAL_NAME
+#define PLUGIN_VERSION     0, 1, 0, 0
+#define PLUGIN_COPYRIGHT   "(C) 2025, Vitaliy Dovgan"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION PLUGIN_VERSION
+ PRODUCTVERSION PLUGIN_VERSION
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4" // U.S. English - multilingual
+        BEGIN
+            VALUE "FileDescription", PLUGIN_DESCRIPTION
+            VALUE "FileVersion", STR(PLUGIN_VERSION)
+            VALUE "InternalName", PLUGIN_NAME
+            VALUE "LegalCopyright", PLUGIN_COPYRIGHT
+            VALUE "OriginalFilename", PLUGIN_NAME ".dll"
+            VALUE "ProductName", PLUGIN_NAME
+            VALUE "ProductVersion", STR(PLUGIN_VERSION)
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1252 // language neutral - multilingual
+    END
+END
