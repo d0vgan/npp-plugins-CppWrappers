@@ -409,7 +409,8 @@ extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
         }
         else // !g_hHostedDll
         {
-            switch ( notifyCode->nmhdr.code )
+            unsigned int notificationCode = notifyCode->nmhdr.code;
+            switch ( notificationCode )
             {
                 case NPPN_DARKMODECHANGED:
                     g_bDarkModeChangedWhileNotLoaded = true;

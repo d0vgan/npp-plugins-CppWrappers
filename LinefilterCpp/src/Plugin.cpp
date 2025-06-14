@@ -35,7 +35,7 @@ void ShowError(const TCHAR* szErrorText)
     ::MessageBox(g_nppData._nppHandle, szErrorText, ERROR_TITLE, MB_OK | MB_ICONERROR);
 }
 
-bool NotifyHostedDll(unsigned int code, bool canShowError)
+bool NotifyHostedDllEx(SCNotification *notifyCode, bool canShowError)
 {
     if ( g_hHostedDll )
     {
@@ -46,11 +46,7 @@ bool NotifyHostedDll(unsigned int code, bool canShowError)
 
         if ( g_pBeNotifiedFunc )
         {
-            SCNotification scNotific;
-            ::ZeroMemory(&scNotific, sizeof(SCNotification));
-            scNotific.nmhdr.hwndFrom = g_nppData._nppHandle;
-            scNotific.nmhdr.code = code;
-            g_pBeNotifiedFunc(&scNotific);
+            g_pBeNotifiedFunc(notifyCode);
             return true;
         }
         else if ( canShowError )
@@ -59,6 +55,18 @@ bool NotifyHostedDll(unsigned int code, bool canShowError)
         }
     }
     return false;
+}
+
+bool NotifyHostedDll(unsigned int code, uptr_t idFrom, bool canShowError)
+{
+    SCNotification scNotific;
+
+    ::ZeroMemory(&scNotific, sizeof(SCNotification));
+    scNotific.nmhdr.hwndFrom = g_nppData._nppHandle;
+    scNotific.nmhdr.idFrom = idFrom;
+    scNotific.nmhdr.code = code;
+
+    return NotifyHostedDllEx(&scNotific, canShowError);
 }
 
 bool InitHostedPlugin()
@@ -97,15 +105,15 @@ bool InitHostedPlugin()
         return false;
     }
 
-    if ( !NotifyHostedDll(NPPN_READY, true) )
+    if ( !NotifyHostedDll(NPPN_READY, 0, true) )
         return false;
 
-    if ( !NotifyHostedDll(NPPN_TBMODIFICATION, true) )
+    if ( !NotifyHostedDll(NPPN_TBMODIFICATION, 0, true) )
         return false;
 
     if ( g_bDarkModeChangedWhileNotLoaded )
     {
-        if ( !NotifyHostedDll(NPPN_DARKMODECHANGED, true) )
+        if ( !NotifyHostedDll(NPPN_DARKMODECHANGED, 0, true) )
             return false;
     }
 
@@ -268,25 +276,29 @@ extern "C" __declspec(dllexport) FuncItem * getFuncsArray(int *nbF)
 
 extern "C" __declspec(dllexport) void beNotified(SCNotification *notifyCode)
 {
-    if ( notifyCode->nmhdr.hwndFrom == g_nppData._nppHandle )
+    if ( notifyCode->nmhdr.hwndFrom == g_nppData._nppHandle ) // Notepad++
     {
         unsigned int notificationCode = notifyCode->nmhdr.code;
-        switch ( notificationCode )
+        if ( g_hHostedDll )
         {
-            case NPPN_TBMODIFICATION:
-            case NPPN_DARKMODECHANGED:
-            case NPPN_READY:
-            case NPPN_SHUTDOWN:
-                if ( g_hHostedDll )
-                {
-                    NotifyHostedDll(notificationCode, false);
-                }
-                else // !g_hHostedDll
-                {
-                    if (notificationCode == NPPN_DARKMODECHANGED)
-                       g_bDarkModeChangedWhileNotLoaded = true;
-                }
-                break;
+            switch ( notificationCode )
+            {
+                case NPPN_TBMODIFICATION:
+                case NPPN_DARKMODECHANGED:
+                case NPPN_READY:
+                case NPPN_SHUTDOWN:
+                    NotifyHostedDllEx(notifyCode, false);
+                    break;
+            }
+        }
+        else // !g_hHostedDll
+        {
+            switch ( notificationCode )
+            {
+                case NPPN_DARKMODECHANGED:
+                    g_bDarkModeChangedWhileNotLoaded = true;
+                    break;
+            }
         }
     }
 }
